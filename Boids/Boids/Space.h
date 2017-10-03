@@ -1,8 +1,8 @@
 #pragma once
 #include "Vector2f.h"
 
-#define WINDOW_WIDTH 1700
-#define WINDOW_HEIGHT 960
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 640
 
 class Space
 {

@@ -14,8 +14,6 @@
 #include "Space.h"
 #include "Flock.h"
 
-#pragma comment(linker, "/STACK:100000")
-
 #define BOOST_SPEED 2.5f
 
 std::vector<Flock*> Flocks;
@@ -219,10 +217,10 @@ void generateThreads()
 
 void generateFlocks()
 {
-	int numFlocks = 100; // RNG::getNextInt() % (7 - 3) + 30;
+	int numFlocks = RNG::getNextInt(3, 7);
 
 	for (int i = 0; i < numFlocks; i++) {
-		int numBirds = 20; // RNG::getNextInt() % (20 - 10) + 100;
+		int numBirds = 10; RNG::getNextInt(10, 20);
 		TotalBoids += numBirds;
 
 		Flocks.push_back(new Flock());
@@ -236,8 +234,8 @@ void generateFlocks()
 
 		while (numBirds--) {
 			auto boid = new Boid();
-			boid->CurPos.X = RNG::getNextInt(0, WINDOW_WIDTH); // RNG::getNextInt() % WINDOW_WIDTH;
-			boid->CurPos.Y = RNG::getNextInt(0, WINDOW_HEIGHT); // RNG::getNextInt() % WINDOW_HEIGHT;
+			boid->CurPos.X = RNG::getNextInt(0, WINDOW_WIDTH);
+			boid->CurPos.Y = RNG::getNextInt(0, WINDOW_HEIGHT);
 			Flocks.at(i)->Boids.push_back(boid);
 		}
 	}
