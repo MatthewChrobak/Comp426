@@ -112,7 +112,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Boid.h" />
-    <ClInclude Include="BoidLock.h" />
     <ClInclude Include="Flock.h" />
     <ClInclude Include="RNG.h" />
     <ClInclude Include="Rules.h" />
@@ -120,7 +119,6 @@
     <ClInclude Include="Vector2f.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RNG.cpp" />
     <ClCompile Include="Space.cpp" />

@@ -7,7 +7,6 @@
 #include <thread>
 #include <mutex>
 #include <vector>
-#include "BoidLock.h"
 #include <string>
 #include "Vector2f.h"
 #include <iostream>
@@ -18,11 +17,7 @@
 
 std::vector<Flock*> Flocks;
 
-BoidLock Cond;
-int TotalBoids = 0;
-bool AppRunning = true;
-
-Vector2f Rule1(int flockIndex, int boidIndex)
+Vector2f cohesionRule(int flockIndex, int boidIndex)
 {
 	auto flock = &Flocks.at(flockIndex)->Boids;
 	Vector2f result(0, 0);
@@ -41,7 +36,7 @@ Vector2f Rule1(int flockIndex, int boidIndex)
 	return (result - flock->at(boidIndex)->CurPos) / 100.0f;
 }
 
-Vector2f Rule2(int flockIndex, int boidIndex)
+Vector2f separationRule(int flockIndex, int boidIndex)
 {
 	auto flock = &Flocks.at(flockIndex)->Boids;
 	Vector2f result(0, 0);
@@ -59,7 +54,7 @@ Vector2f Rule2(int flockIndex, int boidIndex)
 	return result;
 }
 
-Vector2f Rule3(int flockIndex, int boidIndex)
+Vector2f alignmentRule(int flockIndex, int boidIndex)
 {
 	auto flock = &Flocks.at(flockIndex)->Boids;
 	Vector2f result(0, 0);
@@ -79,7 +74,7 @@ Vector2f Rule3(int flockIndex, int boidIndex)
 	return (result - flock->at(boidIndex)->Velocity) / 8.0f;
 }
 
-Vector2f Rule4(int flockIndex, int boidIndex)
+Vector2f focusPointRule(int flockIndex, int boidIndex)
 {
 	auto flock = Flocks.at(flockIndex);
 	auto distanceV = flock->FocusPoint - Flocks.at(flockIndex)->Boids.at(boidIndex)->CurPos;
@@ -89,7 +84,7 @@ Vector2f Rule4(int flockIndex, int boidIndex)
 		flock->FocusPoint.Y = RNG::getNextInt(0, WINDOW_HEIGHT) + 10 * BOOST_SPEED;
 	}
 
-	return (flock->FocusPoint - Flocks.at(flockIndex)->Boids.at(boidIndex)->CurPos) / 100.0f;
+	return (flock->FocusPoint - Flocks.at(flockIndex)->Boids.at(boidIndex)->CurPos) / 200.0f;
 }
 
 void restrictVelocity(int flockIndex, int boidIndex)
@@ -131,32 +126,18 @@ Vector2f restrictPos(int flockIndex, int boidIndex)
 
 void boidThread(int flockIndex, int boidIndex)
 {
-	Cond.lock();
-	bool ourState = !Cond.State;
-	Cond.unlock();
+	auto flock = Flocks.at(flockIndex);
+	auto boid = flock->Boids.at(boidIndex);
 
-	// Get our boid here.
+	while (true) {
 
-	while (AppRunning) {
-
-		// Wait until we can go.
-		while (true) {
-			Cond.lock();
-			if (Cond.State != ourState) {
-				ourState = Cond.State;
-				break;
-			}
-			Cond.unlock();
-			std::this_thread::yield();
+		while (!boid->RequiresLogicUpdate) {
+			std::this_thread::yield();	
 		}
-		Cond.unlock();	
-
-		auto boid = Flocks.at(flockIndex)->Boids.at(boidIndex);
-
-		auto rule1 = Rule1(flockIndex, boidIndex);
-		auto rule2 = Rule2(flockIndex, boidIndex);
-		auto rule3 = Rule3(flockIndex, boidIndex);
-		auto rule4 = Rule4(flockIndex, boidIndex);
+		auto rule1 = cohesionRule(flockIndex, boidIndex);
+		auto rule2 = separationRule(flockIndex, boidIndex);
+		auto rule3 = alignmentRule(flockIndex, boidIndex);
+		auto rule4 = focusPointRule(flockIndex, boidIndex);
 		auto rulePos = restrictPos(flockIndex, boidIndex);
 
 		Vector2f newVelocity = boid->Velocity + rule1 + rule2 + rule3 + rule4 + rulePos;
@@ -165,12 +146,44 @@ void boidThread(int flockIndex, int boidIndex)
 		restrictVelocity(flockIndex, boidIndex);
 
 		boid->NewPos = boid->CurPos + boid->Velocity;
+		boid->RequiresLogicUpdate = false;
+		boid->HasUpdatedLogic = true;
+	}
+}
+
+void flockThread(int flockIndex)
+{
+	auto flock = Flocks.at(flockIndex);
+
+	for (int i = 0; i < flock->Boids.size(); i++) {
+		new std::thread(boidThread, flockIndex, i);
+	}
+
+	while (true) {
+		// Wait until we can go.
+		while (!flock->RequiresLogicUpdate) {
+			std::this_thread::yield();
+		}
 
 
-		// Let the COND know that we're done.
-		Cond.lock();
-		Cond.Count++;
-		Cond.unlock();
+		// Flag them to go.
+		for (int i = 0; i < flock->Boids.size(); i++) {
+			auto boid = flock->Boids.at(i);
+			boid->RequiresLogicUpdate = true;
+		}
+		flock->RequiresLogicUpdate = false;
+
+
+		// Wait to update them.
+		int i = 0;
+		do {
+			auto boid = flock->Boids.at(i);
+			while (!boid->HasUpdatedLogic) {
+				std::this_thread::yield();
+			}
+			boid->HasUpdatedLogic = false;
+			boid->CurPos = boid->NewPos;
+		} while (++i < flock->Boids.size());
 	}
 }
 
@@ -196,9 +209,6 @@ void draw()
 			glVertex2f(Space::ConvertWidth(pos.X + degree), Space::ConvertHeight(pos.Y + degree));
 			glVertex2f(Space::ConvertWidth(pos.X - degree), Space::ConvertHeight(pos.Y + degree));
 			glEnd();
-
-			// Get rid of the flock's old pos.
-			boid->CurPos = boid->NewPos;
 		}
 	}
 
@@ -209,9 +219,7 @@ void draw()
 void generateThreads()
 {
 	for (int i = 0; i < Flocks.size(); i++) {
-		for (int x = 0; x < Flocks.at(i)->Boids.size(); x++) {
-			new std::thread(boidThread, i, x);
-		}
+		new std::thread(flockThread, i);
 	}
 }
 
@@ -221,12 +229,11 @@ void generateFlocks()
 
 	for (int i = 0; i < numFlocks; i++) {
 		int numBirds = 10; RNG::getNextInt(10, 20);
-		TotalBoids += numBirds;
 
 		Flocks.push_back(new Flock());
 
 		auto flock = Flocks.at(Flocks.size() - 1);
-		flock->FocusPoint = Vector2f(RNG::getNextInt(0, WINDOW_WIDTH), RNG::getNextInt(0, WINDOW_HEIGHT));
+		flock->FocusPoint = Vector2f((float)RNG::getNextInt(0, WINDOW_WIDTH), (float)RNG::getNextInt(0, WINDOW_HEIGHT));
 		flock->R = RNG::getNextInt(0, 256);
 		flock->G = RNG::getNextInt(0, 256);
 		flock->B = RNG::getNextInt(0, 256);
@@ -234,8 +241,8 @@ void generateFlocks()
 
 		while (numBirds--) {
 			auto boid = new Boid();
-			boid->CurPos.X = RNG::getNextInt(0, WINDOW_WIDTH);
-			boid->CurPos.Y = RNG::getNextInt(0, WINDOW_HEIGHT);
+			boid->CurPos.X = (float)RNG::getNextInt(0, WINDOW_WIDTH);
+			boid->CurPos.Y = (float)RNG::getNextInt(0, WINDOW_HEIGHT);
 			Flocks.at(i)->Boids.push_back(boid);
 		}
 	}
@@ -259,16 +266,17 @@ int main(int* numargs, char** args)
 	initOpenGL();
 	generateThreads();
 
-	int tmrGraphics = 0;
-	int tmrState = 0;
-	int tmrFrameRate = GetTickCount64();
-	int fps = 0;
+	ULONGLONG tmrGraphics = 0;
+	ULONGLONG tmrState = 0;
+	ULONGLONG tmrFrameRate = GetTickCount64();
+	ULONGLONG fps = 0;
 
 	while (true) {
 		auto tick = GetTickCount64();
 
 		if (tick > tmrGraphics) {
 			glutMainLoopEvent();
+			tmrGraphics = tick + 16;
 			fps++;
 		}
 
@@ -280,16 +288,9 @@ int main(int* numargs, char** args)
 		}
 
 		if (tick > tmrState) {
-			Cond.lock();
-			if (Cond.Count != TotalBoids) {
-				Cond.unlock();
-				std::this_thread::yield();
-				continue;
+			for (int i = 0; i < Flocks.size(); i++) {
+				Flocks.at(i)->RequiresLogicUpdate = true;
 			}
-
-			Cond.State = !Cond.State;
-			Cond.Count = 0;
-			Cond.unlock();
 
 			tmrState = tick + 33;
 		}	

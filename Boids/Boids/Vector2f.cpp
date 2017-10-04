@@ -69,5 +69,5 @@ Vector2f Vector2f::operator*(float val)
 
 float Vector2f::norm()
 {
-	return sqrt(this->X * this->X + this->Y * this->Y);
+	return (float)sqrt(this->X * this->X + this->Y * this->Y);
 }
