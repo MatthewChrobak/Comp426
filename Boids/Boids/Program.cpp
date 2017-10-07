@@ -43,7 +43,7 @@ void generateFlocks()
 	int numFlocks = RNG::getNextInt(3, 7);
 
 	for (int i = 0; i < numFlocks; i++) {
-		int numBirds = 10; RNG::getNextInt(10, 20);
+		int numBirds = RNG::getNextInt(10, 20);
 
 		Flocks.push_back(new Flock());
 

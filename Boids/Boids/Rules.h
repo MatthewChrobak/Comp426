@@ -9,7 +9,7 @@
 #include "Flock.h"
 
 #define BOOST_SPEED 5
-#define BOID_RADIUS 1.5f
+#define BOID_RADIUS 2.0f
 
 std::vector<Flock*> Flocks;
 
