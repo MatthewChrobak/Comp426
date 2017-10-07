@@ -43,29 +43,29 @@ Vector2f Vector2f::operator*(float val)
 	return result;
 }
 
-//Vector2f Vector2f::operator+=(Vector2f v2)
-//{
-//	*this = *this + v2;
-//	return *this;
-//}
-//
-//Vector2f Vector2f::operator-=(Vector2f v2)
-//{
-//	*this = *this - v2;
-//	return *this;
-//}
-//
-//Vector2f Vector2f::operator/=(float val)
-//{
-//	*this = *this / val;
-//	return *this;
-//}
-//
-//Vector2f Vector2f::operator*=(float val)
-//{
-//	*this = *this * val;
-//	return *this;
-//}
+Vector2f Vector2f::operator+=(Vector2f v2)
+{
+	*this = *this + v2;
+	return *this;
+}
+
+Vector2f Vector2f::operator-=(Vector2f v2)
+{
+	*this = *this - v2;
+	return *this;
+}
+
+Vector2f Vector2f::operator/=(float val)
+{
+	*this = *this / val;
+	return *this;
+}
+
+Vector2f Vector2f::operator*=(float val)
+{
+	*this = *this * val;
+	return *this;
+}
 
 float Vector2f::norm()
 {

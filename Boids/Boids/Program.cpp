@@ -31,7 +31,7 @@ void draw()
 	glutPostRedisplay();
 }
 
-void generateThreads()
+void generateFlockThreads()
 {
 	for (int i = 0; i < Flocks.size(); i++) {
 		new std::thread(flockThread, i);
@@ -43,22 +43,21 @@ void generateFlocks()
 	int numFlocks = RNG::getNextInt(3, 7);
 
 	for (int i = 0; i < numFlocks; i++) {
-		int numBirds = RNG::getNextInt(10, 20);
+		auto flock = new Flock();
 
-		Flocks.push_back(new Flock());
-
-		auto flock = Flocks.at(Flocks.size() - 1);
 		flock->R = RNG::getNextInt(0, 256);
 		flock->G = RNG::getNextInt(0, 256);
 		flock->B = RNG::getNextInt(0, 256);
 
-
+		int numBirds = RNG::getNextInt(10, 20);
 		while (numBirds--) {
 			auto boid = new Boid();
 			boid->CurPos.X = (float)RNG::getNextInt(0, WINDOW_WIDTH);
 			boid->CurPos.Y = (float)RNG::getNextInt(0, WINDOW_HEIGHT);
-			Flocks.at(i)->Boids.push_back(boid);
+			flock->Boids.push_back(boid);
 		}
+
+		Flocks.push_back(flock);
 	}
 }
 
@@ -70,7 +69,6 @@ void initOpenGL()
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Assignment 1: Boids");
-
 	glutDisplayFunc(draw);
 }
 
@@ -78,7 +76,7 @@ int main(int* numargs, char** args)
 {
 	generateFlocks();
 	initOpenGL();
-	generateThreads();
+	generateFlockThreads();
 
 	ULONGLONG tmrGraphics = 0;
 	ULONGLONG tmrState = 0;
@@ -105,7 +103,6 @@ int main(int* numargs, char** args)
 			for (int i = 0; i < Flocks.size(); i++) {
 				Flocks.at(i)->RequiresLogicUpdate = true;
 			}
-
 			tmrState = tick + 33;
 		}	
 	}

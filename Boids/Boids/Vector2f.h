@@ -12,10 +12,10 @@ public:
 	Vector2f operator-(Vector2f v2);
 	Vector2f operator/(float val);
 	Vector2f operator*(float val);
-	//Vector2f operator+=(Vector2f v2);
-	//Vector2f operator-=(Vector2f v2);
-	//Vector2f operator/=(float val);
-	//Vector2f operator*=(float val);
+	Vector2f operator+=(Vector2f v2);
+	Vector2f operator-=(Vector2f v2);
+	Vector2f operator/=(float val);
+	Vector2f operator*=(float val);
 
 	float norm();
 };

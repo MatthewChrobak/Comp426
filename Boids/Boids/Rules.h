@@ -1,12 +1,11 @@
 #pragma once
 #include "Boid.h"
 #include "RNG.h"
-
-#include <thread>
-#include <vector>
 #include "Vector2f.h"
 #include "Space.h"
 #include "Flock.h"
+#include <thread>
+#include <vector>
 
 #define BOOST_SPEED 5
 #define BOID_RADIUS 2.0f
