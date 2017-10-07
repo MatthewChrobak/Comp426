@@ -33,6 +33,9 @@
     <ClInclude Include="Flock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Threads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Program.cpp">

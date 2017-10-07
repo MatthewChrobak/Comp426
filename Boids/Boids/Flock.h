@@ -11,8 +11,6 @@ public:
 	char B;
 
 	std::vector<Boid*> Boids;
-
-	Vector2f FocusPoint;
 	bool RequiresLogicUpdate = false;
 };
 
