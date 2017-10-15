@@ -117,6 +117,7 @@
     <ClInclude Include="Boid.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Flock.h" />
+    <ClInclude Include="RNG.h" />
     <ClInclude Include="Space.h" />
     <ClInclude Include="Vector2f.h" />
   </ItemGroup>
@@ -124,6 +125,7 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Flock.cpp" />
     <ClCompile Include="Program.cpp" />
+    <ClCompile Include="RNG.cpp" />
     <ClCompile Include="Space.cpp" />
     <ClCompile Include="Vector2f.cpp" />
   </ItemGroup>
