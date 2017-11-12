@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Boids_TBB", "Boids_TBB\Boid
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Boids_OpenCL", "Boids_OpenCL\Boids_OpenCL.vcxproj", "{723D8F67-3C74-45FE-AA8C-41AE147D5E9F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Boids_CUDA", "Boids_CUDA\Boids_CUDA.vcxproj", "{9DEECAD9-F691-4763-86AC-3241A8B7263F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{723D8F67-3C74-45FE-AA8C-41AE147D5E9F}.Release|x64.Build.0 = Release|x64
 		{723D8F67-3C74-45FE-AA8C-41AE147D5E9F}.Release|x86.ActiveCfg = Release|Win32
 		{723D8F67-3C74-45FE-AA8C-41AE147D5E9F}.Release|x86.Build.0 = Release|Win32
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Debug|x64.ActiveCfg = Debug|x64
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Debug|x64.Build.0 = Debug|x64
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Debug|x86.ActiveCfg = Debug|Win32
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Debug|x86.Build.0 = Debug|Win32
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Release|x64.ActiveCfg = Release|x64
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Release|x64.Build.0 = Release|x64
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Release|x86.ActiveCfg = Release|Win32
+		{9DEECAD9-F691-4763-86AC-3241A8B7263F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

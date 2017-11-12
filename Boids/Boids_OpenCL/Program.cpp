@@ -57,8 +57,6 @@ std::vector<cl_platform_id> clGetPlatforms()
 	clError = clGetPlatformIDs(0, nullptr, &numPlatforms);
 	clCheckError();
 
-	std::cout << "Found " << numPlatforms << " platforms." << std::endl;
-
 	std::vector<cl_platform_id> platforms(numPlatforms);
 	std::vector<cl_platform_id> opencl_platforms;
 	clError = clGetPlatformIDs(numPlatforms, platforms.data(), nullptr);
@@ -69,7 +67,6 @@ std::vector<cl_platform_id> clGetPlatforms()
 		std::string name = getPlatformInfo(platform, CL_PLATFORM_NAME);
 
 		if (name.find("OpenCL") != std::string::npos) {
-			std::cout << "Found platform " << name << " at " << platform << std::endl;
 			opencl_platforms.push_back(platform);
 		}
 	}
@@ -88,8 +85,6 @@ std::vector<cl_device_id> clGetDevicesOfType(cl_int type)
 		clError = clGetDeviceIDs(platforms[0], type, 0, nullptr, &numDevices);
 		clCheckError();
 
-		std::cout << "Found " << numDevices << " devices." << std::endl;
-
 		std::vector<cl_device_id> platformDevices(numDevices);
 		clError = clGetDeviceIDs(platforms[0], type, numDevices, platformDevices.data(), nullptr);
 		clCheckError();
@@ -106,18 +101,48 @@ std::vector<cl_device_id> clGetDevicesOfType(cl_int type)
 	return devices;
 }
 
+const char* getKernel()
+{
+	return R"(
+__kernel void foo(__global int* ptr)
+{
+	*ptr = 10;
+}
+)";
+}
+
 void initOpenCL()
 {
-	auto devices = clGetDevicesOfType(CL_DEVICE_TYPE_GPU);
-
-	cl_uint num = devices.size();
-	cl_context context = clCreateContext(nullptr, num, &devices[0], nullptr, nullptr, &clError);
+	auto gpu_devices = clGetDevicesOfType(CL_DEVICE_TYPE_GPU);
+	cl_context gpu_context = clCreateContext(nullptr, gpu_devices.size(), &gpu_devices[0], nullptr, nullptr, &clError);
+	clCheckError();
+	cl_command_queue gpu_work = clCreateCommandQueue(gpu_context, gpu_devices[0], 0, &clError);
 	clCheckError();
 
-	
-	cl_command_queue queue = clCreateCommandQueue(context, devices[0], 0, &clError);
+	auto cpu_devices = clGetDevicesOfType(CL_DEVICE_TYPE_CPU);
+	cl_context cpu_context = clCreateContext(nullptr, cpu_devices.size(), &cpu_devices[0], nullptr, nullptr, &clError);
 	clCheckError();
-	
+	cl_command_queue cpu_work = clCreateCommandQueue(cpu_context, cpu_devices[0], 0, &clError);
+	clCheckError();
+
+
+	const char* kernel_source = getKernel();
+	const char** kernel_source_address = &kernel_source;
+	const size_t size = 1;
+	cl_program program = clCreateProgramWithSource(cpu_context, 1, kernel_source_address, &size, &clError);
+	clCheckError();
+
+
+	cl_mem buffer = clCreateBuffer(cpu_context, CL_MEM_READ_WRITE, sizeof(int), nullptr, &clError);
+	clCheckError();
+
+	clError = clBuildProgram(program, gpu_devices.size(), gpu_devices.data(), nullptr, nullptr, nullptr);
+	clCheckError();
+
+	cl_kernel kernel = clCreateKernel(program, "foo", &clError);
+	clCheckError();
+
+
 	system("PAUSE");
 }
 
