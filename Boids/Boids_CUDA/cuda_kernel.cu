@@ -4,7 +4,7 @@
 #include <iostream>
 #include "DataTypes.h"
 
-__global__ void updateBoid(Boid* boids, int numFlocks, int numBoids)
+__global__ void updateBoid(Boid* boids)
 {
 	int boidId = blockIdx.x * blockDim.x + threadIdx.x;
 	auto boid = boids + boidId;
@@ -17,16 +17,9 @@ void updateFlocks(Boid* boids, int numFlocks, int numBoids)
 {
 	Boid* MBoids;
 	cudaMalloc((void**)&MBoids, sizeof(Boid) * numFlocks * numBoids);
-	Boid* localBoids = (Boid*)malloc(numFlocks * numBoids * sizeof(Boid));
-
 	cudaMemcpy(MBoids, boids, numBoids * numFlocks * sizeof(Boid), cudaMemcpyHostToDevice);
-	updateBoid<<<numFlocks, numBoids >>>(MBoids, numFlocks, numBoids);
+	updateBoid<<<numFlocks, numBoids>>>(MBoids);
 	cudaDeviceSynchronize();
-	cudaMemcpy(localBoids, MBoids, numBoids * numFlocks * sizeof(Boid), cudaMemcpyDeviceToHost);
-
-	for (int i = 0; i < numBoids * numFlocks; i++) {
-		*(boids + i) = *(localBoids + i);
-	}
-	free(localBoids);
+	cudaMemcpy(boids, MBoids, numBoids * numFlocks * sizeof(Boid), cudaMemcpyDeviceToHost);
 	cudaFree(MBoids);
 }
