@@ -3,8 +3,8 @@
 class Boid
 {
 public:
-	Vector2f CurPos;
-	Vector2f Velocity;
+	Vector CurPos;
+	Vector Velocity;
 	bool RequiresLogicUpdate = false;
 	bool HasUpdatedLogic = false;
 };

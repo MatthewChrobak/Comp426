@@ -16,7 +16,7 @@ void boidThread(int flockIndex, int boidIndex)
 		auto rule3 = alignmentRule(flockIndex, boidIndex);
 		auto rulePos = restrictPos(flockIndex, boidIndex);
 
-		Vector2f newVelocity = boid->Velocity + rule1 + rule2 + rule3 + rulePos;
+		Vector newVelocity = boid->Velocity + rule1 + rule2 + rule3 + rulePos;
 
 		boid->Velocity = newVelocity;
 		restrictVelocity(flockIndex, boidIndex);

@@ -1,12 +1,15 @@
 #include <GL\glew.h>
 #include <GL\freeglut.h>
 #include <string>
-#include "Boid.h"
+#include "DataTypes.h"
 #include "RNG.h"
 #include "Color.h"
 #include <iostream>
+#include "Rules.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
-Boid** Boids;
+Boid* Boids;
 Color* Colors;
 int NUM_FLOCKS = 0;
 int NUM_BOIDS = 0;
@@ -18,7 +21,7 @@ void draw()
 	
 	for (int flockIndex = 0; flockIndex < NUM_FLOCKS; flockIndex++) {
 		for (int boidIndex = 0; boidIndex < NUM_BOIDS; boidIndex++) {
-			auto boid = *(Boids + (NUM_BOIDS * flockIndex) + boidIndex);
+			auto boid = Boids + (NUM_BOIDS * flockIndex) + boidIndex;
 			auto pos = boid->Position;
 
 			auto color = *(Colors + flockIndex);
@@ -42,13 +45,13 @@ void generateFlocks()
 	NUM_FLOCKS = RNG::getNextInt(3, 7);
 	NUM_BOIDS = RNG::getNextInt(10, 20);
 
-	Boids = (Boid**)malloc(sizeof(Boid) * NUM_FLOCKS * NUM_BOIDS);
+	Boids = (Boid*)malloc(sizeof(Boid) * NUM_FLOCKS * NUM_BOIDS);
 	Colors = (Color*)malloc(sizeof(Color) * NUM_FLOCKS);
 
 	for (int i = 0; i < NUM_FLOCKS * NUM_BOIDS; i++) {
-		auto boid = new Boid();
-		boid->Position.X = (float)RNG::getNextInt(0, WINDOW_WIDTH);
-		boid->Position.Y = (float)RNG::getNextInt(0, WINDOW_HEIGHT);
+		Boid boid;
+		boid.Position.X = (float)RNG::getNextInt(0, WINDOW_WIDTH);
+		boid.Position.Y = (float)RNG::getNextInt(0, WINDOW_HEIGHT);
 
 		*(Boids + i) = boid;
 	}
@@ -73,13 +76,15 @@ void initOpenGL()
 }
 
 
-extern void updateFlocks(Boid** boids, int numFlocks, int numBoids);
 
-void updateBoids(Boid** boids, int flockNum)
+
+extern void updateFlocks(Boid* boids, int numFlocks, int numBoids);
+
+void updateBoids(Boid* boids, int flockNum)
 {
 	for (int boidIndex = flockNum * NUM_BOIDS; boidIndex < (flockNum + 1) * NUM_BOIDS; boidIndex++) {
-		auto boid = *(boids + boidIndex);
-		boid->updateVelocity(boids, flockNum, NUM_BOIDS);
+		auto boid = (boids + boidIndex);
+		updateVelocity(boids, flockNum, NUM_BOIDS, boid);
 	}
 }
 
@@ -118,3 +123,4 @@ int main(int* numargs, char** args)
 		}
 	}
 }
+

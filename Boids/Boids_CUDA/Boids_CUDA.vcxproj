@@ -124,21 +124,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RNG.cpp" />
     <ClCompile Include="Space.cpp" />
-    <ClCompile Include="Vector2f.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda_kernel.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Boid.h" />
+    <ClInclude Include="DataTypes.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="RNG.h" />
+    <ClInclude Include="Rules.h" />
     <ClInclude Include="Space.h" />
-    <ClInclude Include="Vector2f.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
