@@ -5,7 +5,7 @@ std::string getKernel()
 	return R"(
 __kernel void foo()
 {
-	printf("Hello world!");
+	printf("Hello world!\n");
 })";
 }
 
@@ -19,6 +19,7 @@ void initOpenCL()
 	auto kernel = clhelper::createKernel(program, "foo");
 
 	clhelper::enqueueForTaskParallelism(queue, kernel);
+	clhelper::waitForQueueToFinish(queue);
 
 	clReleaseKernel(kernel);
 	clReleaseProgram(program);

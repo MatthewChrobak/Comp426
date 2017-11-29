@@ -7,7 +7,7 @@ namespace clhelper {
 
 	cl_int clError;
 	
-	void checkError()
+	void checkForCLError()
 	{
 		if (clError != CL_SUCCESS) {
 			std::cout << "CL ERROR: " << clError << std::endl;
@@ -19,11 +19,11 @@ namespace clhelper {
 	{
 		size_t valueSize = 0;
 		clError = clGetPlatformInfo(platform, type, 0, nullptr, &valueSize);
-		checkError();
+		checkForCLError();
 
 		char* cstr = (char*)malloc(valueSize);
 		clError = clGetPlatformInfo(platform, type, valueSize, cstr, nullptr);
-		checkError();
+		checkForCLError();
 
 		std::string info(cstr);
 		free(cstr);
@@ -35,12 +35,12 @@ namespace clhelper {
 	{
 		cl_uint numPlatforms = 0;
 		clError = clGetPlatformIDs(0, nullptr, &numPlatforms);
-		checkError();
+		checkForCLError();
 
 		std::vector<cl_platform_id> platforms(numPlatforms);
 		std::vector<cl_platform_id> opencl_platforms;
 		clError = clGetPlatformIDs(numPlatforms, platforms.data(), nullptr);
-		checkError();
+		checkForCLError();
 
 		for (auto platform : platforms)
 		{
@@ -58,11 +58,11 @@ namespace clhelper {
 	{
 		size_t valueSize = 0;
 		clError = clGetDeviceInfo(device, type, 0, nullptr, &valueSize);
-		checkError();
+		checkForCLError();
 
 		char* cstr = (char*)malloc(valueSize);
 		clError = clGetDeviceInfo(device, type, valueSize, cstr, nullptr);
-		checkError();
+		checkForCLError();
 
 		std::string info(cstr);
 		free(cstr);
@@ -79,11 +79,11 @@ namespace clhelper {
 		{
 			cl_uint numDevices = 0;
 			clError = clGetDeviceIDs(platforms[0], type, 0, nullptr, &numDevices);
-			checkError();
+			checkForCLError();
 
 			std::vector<cl_device_id> platformDevices(numDevices);
 			clError = clGetDeviceIDs(platforms[0], type, numDevices, platformDevices.data(), nullptr);
-			checkError();
+			checkForCLError();
 
 			for (auto device : platformDevices)
 			{
@@ -100,14 +100,14 @@ namespace clhelper {
 	cl_context createContext(std::vector<cl_device_id> devices)
 	{
 		auto context = clCreateContext(nullptr, devices.size(), devices.data(), nullptr, nullptr, &clError);
-		checkError();
+		checkForCLError();
 		return context;
 	}
 
 	cl_command_queue createCommandQueue(cl_context context, cl_device_id deviceId)
 	{
 		auto queue = clCreateCommandQueue(context, deviceId, 0, &clError);
-		checkError();
+		checkForCLError();
 		return queue;
 	}
 
@@ -116,31 +116,37 @@ namespace clhelper {
 		const size_t size = kernelCode.size();
 		const char* cPtr = kernelCode.c_str();
 		cl_program program = clCreateProgramWithSource(context, 1, &cPtr, &size, &clError);
-		checkError();
+		checkForCLError();
 		return program;
 	}
 
 	void buildProgram(cl_program program, std::vector<cl_device_id> devices)
 	{
 		clError = clBuildProgram(program, devices.size(), devices.data(), NULL, NULL, NULL);
-		checkError();
+		checkForCLError();
 	}
 
 	cl_kernel createKernel(cl_program program, std::string functionName)
 	{
 		cl_kernel kernel = clCreateKernel(program, functionName.c_str(), &clError);
-		checkError();
+		checkForCLError();
 		return kernel;
 	}
 
 	void enqueueForTaskParallelism(cl_command_queue queue, cl_kernel kernel)
 	{
 		clError = clEnqueueTask(queue, kernel, 0, NULL, NULL);
-		checkError();
+		checkForCLError();
 	}
 
 	void enqueueForDataParallelism(cl_command_queue queue, cl_kernel kernel)
 	{
 
+	}
+
+	void waitForQueueToFinish(cl_command_queue queue)
+	{
+		clError = clFinish(queue);
+		checkForCLError();
 	}
 }
