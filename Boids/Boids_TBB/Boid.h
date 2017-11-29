@@ -9,16 +9,16 @@
 class Boid
 {
 public:
-	Vector Position;
-	Vector Velocity;
+	Vector2f Position;
+	Vector2f Velocity;
 
 	void updateVelocity(const std::vector<Boid*>& flock);
 	void updatePosition();
 
 private:
-	Vector cohesionRule(const std::vector<Boid*>& flock);
-	Vector separationRule(const std::vector<Boid*>& flock);
-	Vector alignmentRule(const std::vector<Boid*>& flock);
-	Vector restrictPosition(const Boid& flock);
+	Vector2f cohesionRule(const std::vector<Boid*>& flock);
+	Vector2f separationRule(const std::vector<Boid*>& flock);
+	Vector2f alignmentRule(const std::vector<Boid*>& flock);
+	Vector2f restrictPosition(const Boid& flock);
 	void restrictVelocity();
 };

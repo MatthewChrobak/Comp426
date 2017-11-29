@@ -3,37 +3,37 @@
 #include "Space.h"
 #include <math.h>
 #define BOOST_SPEED 5
-#define BOID_RADIUS 2.0f
+#define BOID_RADIUS 7.0f
 
-Vector add(Vector v1, Vector v2)
+Vector2f add(Vector2f v1, Vector2f v2)
 {
 	v1.X += v2.X;
 	v1.Y += v2.Y;
 	return v1;
 }
 
-Vector subtract(Vector v1, Vector v2)
+Vector2f subtract(Vector2f v1, Vector2f v2)
 {
 	v1.X -= v2.X;
 	v1.Y -= v2.Y;
 	return v1;
 }
 
-Vector multiply(Vector v1, float scalar)
+Vector2f multiply(Vector2f v1, float scalar)
 {
 	v1.X *= scalar;
 	v1.Y *= scalar;
 	return v1;
 }
 
-Vector divide(Vector v1, float scalar)
+Vector2f divide(Vector2f v1, float scalar)
 {
 	v1.X /= scalar;
 	v1.Y /= scalar;
 	return v1;
 }
 
-float norm(Vector v)
+float norm(Vector2f v)
 {
 	return sqrt(v.X * v.X + v.Y * v.Y);
 }
@@ -43,9 +43,9 @@ void updatePosition(Boid* boid)
 	boid->Position = add(boid->Position, boid->Velocity);
 }
 
-Vector cohesionRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
+Vector2f cohesionRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 {
-	Vector result;
+	Vector2f result;
 	result.X = 0;
 	result.Y = 0;
 
@@ -65,9 +65,9 @@ Vector cohesionRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 	return divide(subtract(result, thisBoid->Position), 100.0f);
 }
 
-Vector separationRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
+Vector2f separationRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 {
-	Vector result;
+	Vector2f result;
 	result.X = 0;
 	result.Y = 0;
 
@@ -86,9 +86,9 @@ Vector separationRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 	return result;
 }
 
-Vector alignmentRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
+Vector2f alignmentRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 {
-	Vector result;
+	Vector2f result;
 	result.X = 0;
 	result.Y = 0;
 
@@ -109,9 +109,9 @@ Vector alignmentRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 	return divide(subtract(result, thisBoid->Velocity), 8.0f);
 }
 
-Vector restrictPosition(const Boid& boid)
+Vector2f restrictPosition(const Boid& boid)
 {
-	Vector result;
+	Vector2f result;
 	result.X = 0;
 	result.Y = 0;
 	float push = BOOST_SPEED;
@@ -133,30 +133,48 @@ Vector restrictPosition(const Boid& boid)
 	return result;
 }
 
-void restrictVelocity(Boid* thisBoid)
+Vector2f moveToPoint(Boid* thisBoid, Vector2f* focusPoint)
 {
-	Vector result;
+	Vector2f result;
 	result.X = 0;
 	result.Y = 0;
-	float vnorm = norm(thisBoid->Velocity);
+
+	auto distance = norm(subtract(thisBoid->Position, *focusPoint));
+
+	if (distance < BOID_RADIUS * 10) {
+		focusPoint->X = RNG::getNextInt(0, WINDOW_WIDTH);
+		focusPoint->Y = RNG::getNextInt(0, WINDOW_HEIGHT);
+	}
+	else {
+		result = divide(subtract(thisBoid->Position, *focusPoint), 100.0f);
+	}
+	
+	return result;
+}
+
+void restrictVelocity(Boid* thisBoid)
+{
+	Vector2f result;
+	result.X = 0;
+	result.Y = 0;
+	float vnorm = norm(thisBoid->NewVelocity);
 
 	if (vnorm > BOOST_SPEED) {
-		result = multiply(divide(thisBoid->Velocity, vnorm), BOOST_SPEED);
+		result = multiply(divide(thisBoid->NewVelocity, vnorm), BOOST_SPEED);
 
-		thisBoid->Velocity.X = result.X;
-		thisBoid->Velocity.Y = result.Y;
+		thisBoid->NewVelocity.X = result.X;
+		thisBoid->NewVelocity.Y = result.Y;
 	}
 }
 
-void updateVelocity(Boid* boids, int flockNum, int num_boids, Boid* boid)
+void updateVelocity(Boid* boids, int flockNum, int num_boids, Boid* boid, Vector2f* focusPoint)
 {
 	auto rule1 = cohesionRule(boids, flockNum, num_boids, boid);
 	auto rule2 = separationRule(boids, flockNum, num_boids, boid);
 	auto rule3 = alignmentRule(boids, flockNum, num_boids, boid);
+	auto rule4 = moveToPoint(boid, focusPoint);
 	auto rulePos = restrictPosition(*boid);
 
-	auto newVelocity = add(add(add(add(boid->Velocity, rule1), rule2), rule3), rulePos);
-
-	boid->Velocity = add(boid->Velocity, newVelocity);
+	boid->NewVelocity = add(add(boid->Velocity, add(add(add(rule1, rule2), rule3), rulePos)), rule4);
 	restrictVelocity(boid);
 }

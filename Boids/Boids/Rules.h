@@ -12,10 +12,10 @@
 
 std::vector<Flock*> Flocks;
 
-Vector cohesionRule(int flockIndex, int boidIndex)
+Vector2f cohesionRule(int flockIndex, int boidIndex)
 {
 	auto flock = &Flocks.at(flockIndex)->Boids;
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 
 	for (int i = 0; i < flock->size(); i++) {
 		if (i != boidIndex) {
@@ -31,10 +31,10 @@ Vector cohesionRule(int flockIndex, int boidIndex)
 	return (result - flock->at(boidIndex)->CurPos) / 100.0f;
 }
 
-Vector separationRule(int flockIndex, int boidIndex)
+Vector2f separationRule(int flockIndex, int boidIndex)
 {
 	auto flock = &Flocks.at(flockIndex)->Boids;
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 
 	for (int i = 0; i < flock->size(); i++) {
 		if (i != boidIndex) {
@@ -49,10 +49,10 @@ Vector separationRule(int flockIndex, int boidIndex)
 	return result;
 }
 
-Vector alignmentRule(int flockIndex, int boidIndex)
+Vector2f alignmentRule(int flockIndex, int boidIndex)
 {
 	auto flock = &Flocks.at(flockIndex)->Boids;
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 
 	for (int i = 0; i < flock->size(); i++) {
 		if (i != boidIndex) {
@@ -71,7 +71,7 @@ Vector alignmentRule(int flockIndex, int boidIndex)
 
 void restrictVelocity(int flockIndex, int boidIndex)
 {
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 	auto boid = Flocks.at(flockIndex)->Boids.at(boidIndex);
 	float norm = boid->Velocity.norm();
 
@@ -83,9 +83,9 @@ void restrictVelocity(int flockIndex, int boidIndex)
 	}
 }
 
-Vector restrictPos(int flockIndex, int boidIndex)
+Vector2f restrictPos(int flockIndex, int boidIndex)
 {
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 	auto p = Flocks.at(flockIndex)->Boids.at(boidIndex)->CurPos;
 	float push = BOOST_SPEED;
 

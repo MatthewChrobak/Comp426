@@ -1,21 +1,21 @@
 #pragma once
-class Vector
+class Vector2f
 {
 public:
 	float X;
 	float Y;
 
-	Vector();
-	Vector(float x, float y);
+	Vector2f();
+	Vector2f(float x, float y);
 
-	Vector operator+(Vector v2);
-	Vector operator-(Vector v2);
-	Vector operator/(float val);
-	Vector operator*(float val);
-	Vector operator+=(Vector v2);
-	Vector operator-=(Vector v2);
-	Vector operator/=(float val);
-	Vector operator*=(float val);
+	Vector2f operator+(Vector2f v2);
+	Vector2f operator-(Vector2f v2);
+	Vector2f operator/(float val);
+	Vector2f operator*(float val);
+	Vector2f operator+=(Vector2f v2);
+	Vector2f operator-=(Vector2f v2);
+	Vector2f operator/=(float val);
+	Vector2f operator*=(float val);
 
 	float norm();
 };

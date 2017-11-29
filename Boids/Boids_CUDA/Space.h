@@ -7,7 +7,7 @@
 class Space
 {
 public:
-	static Vector ConvertForOpenGL(Vector v);
+	static Vector2f ConvertForOpenGL(Vector2f v);
 	static float ConvertWidth(float width);
 	static float ConvertHeight(float height);
 };

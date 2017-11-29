@@ -1,6 +1,6 @@
 #include "Space.h"
 
-Vector Space::ConvertForOpenGL(Vector v)
+Vector2f Space::ConvertForOpenGL(Vector2f v)
 {
 	v.X = Space::ConvertWidth(v.X);
 	v.Y = Space::ConvertHeight(v.Y);

@@ -7,7 +7,7 @@ void Boid::updateVelocity(const std::vector<Boid*>& flock)
 	auto rule3 = this->alignmentRule(flock);
 	auto rulePos = this->restrictPosition(*this);
 
-	Vector newVelocity = this->Velocity + rule1 + rule2 + rule3 + rulePos;
+	Vector2f newVelocity = this->Velocity + rule1 + rule2 + rule3 + rulePos;
 
 	this->Velocity += newVelocity;
 	this->restrictVelocity();
@@ -18,9 +18,9 @@ void Boid::updatePosition()
 	this->Position += this->Velocity;
 }
 
-Vector Boid::cohesionRule(const std::vector<Boid*>& flock)
+Vector2f Boid::cohesionRule(const std::vector<Boid*>& flock)
 {
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 
 	for (int i = 0; i < flock.size(); i++) {
 		auto boid = flock.at(i);
@@ -38,9 +38,9 @@ Vector Boid::cohesionRule(const std::vector<Boid*>& flock)
 	return (result - this->Position) / 100.0f;
 }
 
-Vector Boid::separationRule(const std::vector<Boid*>& flock)
+Vector2f Boid::separationRule(const std::vector<Boid*>& flock)
 {
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 
 	for (int i = 0; i < flock.size(); i++) {
 		auto boid = flock.at(i);
@@ -57,9 +57,9 @@ Vector Boid::separationRule(const std::vector<Boid*>& flock)
 	return result;
 }
 
-Vector Boid::alignmentRule(const std::vector<Boid*>& flock)
+Vector2f Boid::alignmentRule(const std::vector<Boid*>& flock)
 {
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 
 	for (int i = 0; i < flock.size(); i++) {
 		auto boid = flock.at(i);
@@ -78,9 +78,9 @@ Vector Boid::alignmentRule(const std::vector<Boid*>& flock)
 	return (result - this->Velocity) / 8.0f;
 }
 
-Vector Boid::restrictPosition(const Boid& boid)
+Vector2f Boid::restrictPosition(const Boid& boid)
 {
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 	float push = BOOST_SPEED;
 
 	if (boid.Position.X < 0) {
@@ -102,7 +102,7 @@ Vector Boid::restrictPosition(const Boid& boid)
 
 void Boid::restrictVelocity()
 {
-	Vector result(0, 0);
+	Vector2f result(0, 0);
 	float norm = this->Velocity.norm();
 
 	if (norm > BOOST_SPEED) {
