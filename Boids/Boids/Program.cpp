@@ -72,8 +72,23 @@ void initOpenGL()
 	glutDisplayFunc(draw);
 }
 
+
+void foo()
+{
+	static int x = 10;
+	x += 10;
+	printf("%d", x);
+}
+
 int main(int* numargs, char** args)
 {
+	foo();
+	foo();
+	foo();
+	system("PAUSE");
+
+
+	return 0;
 	generateFlocks();
 	initOpenGL();
 	generateFlockThreads();

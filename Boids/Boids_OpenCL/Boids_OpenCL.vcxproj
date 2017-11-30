@@ -19,26 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Boid.cpp" />
-    <ClCompile Include="Flock.cpp" />
-    <ClCompile Include="NewMain.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RNG.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Space.cpp" />
-    <ClCompile Include="Vector2f.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Boid.h" />
     <ClInclude Include="Color.h" />
-    <ClInclude Include="Flock.h" />
+    <ClInclude Include="DataTypes.h" />
+    <ClInclude Include="Kernels.h" />
+    <ClInclude Include="OpenCL.h" />
     <ClInclude Include="OpenCL_Helper.h" />
     <ClInclude Include="RNG.h" />
+    <ClInclude Include="Rules.h" />
     <ClInclude Include="Space.h" />
-    <ClInclude Include="Vector2f.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

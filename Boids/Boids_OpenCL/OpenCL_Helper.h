@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+typedef std::vector<cl_device_id> DeviceList;
+
 namespace clhelper {
 
 	cl_int clError;
@@ -11,7 +13,7 @@ namespace clhelper {
 	{
 		if (clError != CL_SUCCESS) {
 			std::cout << "CL ERROR: " << clError << std::endl;
-			throw;
+			throw clError;
 		}
 	}
 
@@ -62,6 +64,22 @@ namespace clhelper {
 
 		char* cstr = (char*)malloc(valueSize);
 		clError = clGetDeviceInfo(device, type, valueSize, cstr, nullptr);
+		checkForCLError();
+
+		std::string info(cstr);
+		free(cstr);
+
+		return info;
+	}
+
+	std::string getProgramBuildInfo(cl_program program, cl_device_id device_id, cl_program_build_info type)
+	{
+		size_t valueSize = 0;
+		clError = clGetProgramBuildInfo(program, device_id, type, 0, nullptr, &valueSize);
+		checkForCLError();
+
+		char* cstr = (char*)malloc(valueSize);
+		clError = clGetProgramBuildInfo(program, device_id, type, valueSize, cstr, nullptr);
 		checkForCLError();
 
 		std::string info(cstr);
@@ -123,7 +141,14 @@ namespace clhelper {
 	void buildProgram(cl_program program, std::vector<cl_device_id> devices)
 	{
 		clError = clBuildProgram(program, devices.size(), devices.data(), NULL, NULL, NULL);
-		checkForCLError();
+		try {
+			checkForCLError();
+		}
+		catch (cl_int e)
+		{
+			std::cout << getProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG) << std::endl;
+			throw;
+		}
 	}
 
 	cl_kernel createKernel(cl_program program, std::string functionName)
@@ -144,9 +169,11 @@ namespace clhelper {
 		checkForCLError();
 	}
 
-	void enqueueForDataParallelism(cl_command_queue queue, cl_kernel kernel)
+	void enqueueForDataParallelism(cl_command_queue queue, cl_kernel kernel, size_t numBlocks, size_t numThreads)
 	{
-
+		size_t total = numBlocks * numThreads;
+		clError = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &total, &numThreads, 0, NULL, NULL);
+		checkForCLError();
 	}
 
 	void waitForQueueToFinish(cl_command_queue queue)
@@ -165,6 +192,18 @@ namespace clhelper {
 	void setKernelArg(cl_kernel kernel, cl_uint paramIndex, size_t sizeofParam, const void* paramValue)
 	{
 		clError = clSetKernelArg(kernel, paramIndex, sizeofParam, paramValue);
+		checkForCLError();
+	}
+
+	void enqueueWriteBuffer(cl_command_queue queue, cl_mem buffer, size_t offset, size_t memSize, const void* data)
+	{
+		clError = clEnqueueWriteBuffer(queue, buffer, CL_TRUE, offset, memSize, data, 0, NULL, NULL);
+		checkForCLError();
+	}
+
+	void enqueueReadBuffer(cl_command_queue queue, cl_mem buffer, size_t offset, size_t memSize, void* data)
+	{
+		clError = clEnqueueReadBuffer(queue, buffer, CL_TRUE, offset, memSize, data, 0, NULL, NULL);
 		checkForCLError();
 	}
 }
