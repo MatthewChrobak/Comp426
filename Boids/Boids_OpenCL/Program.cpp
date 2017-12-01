@@ -5,6 +5,7 @@
 #include "RNG.h"
 #include "Color.h"
 #include <iostream>
+#include "Space.h"
 #include "Rules.h"
 #include "OpenCL.h"
 
@@ -97,7 +98,6 @@ int main(int* numargs, char** args)
 {
 	generateFlocks();
 	initOpenGL();
-	initOpenCL();
 
 	ULONGLONG tmrGraphics = 0;
 	ULONGLONG tmrState = 0;
@@ -121,9 +121,7 @@ int main(int* numargs, char** args)
 		}
 
 		if (tick > tmrState) {
-			for (int flockIndex = 0; flockIndex < NUM_FLOCKS; flockIndex++) {
-				updateBoids(Boids, flockIndex);
-			}
+			triggerCpuWork(Boids, NUM_FLOCKS, NUM_BOIDS);
 			triggerGpuWork(Boids, NUM_FLOCKS, NUM_BOIDS);
 			tmrState = tick + 33;
 		}

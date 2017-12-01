@@ -1,7 +1,12 @@
+#ifndef OPENCL
 #pragma once
-#include "DataTypes.h"
-#include "Space.h"
 #include <math.h>
+#endif
+
+#include "DataTypes.h"
+
+#define WINDOW_WIDTH 1800
+#define WINDOW_HEIGHT 900
 #define BOOST_SPEED 10
 #define BOID_RADIUS 2.0f
 #define DISTANCE (20 * BOID_RADIUS)
@@ -57,7 +62,7 @@ Vector cohesionRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 	int totalSeen = 0;
 
 	for (int i = 0; i < num_boids; i++) {
-		auto boid = (boids + (flockNum * num_boids) + i);
+		Boid* boid = (boids + (flockNum * num_boids) + i);
 
 		if (boid != thisBoid && isCloseby(thisBoid, boid)) {
 			result = add(result, boid->Position);
@@ -84,10 +89,10 @@ Vector separationRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 	result.Y = 0;
 
 	for (int i = 0; i < num_boids; i++) {
-		auto boid = (boids + (flockNum * num_boids) + i);
+		Boid* boid = (boids + (flockNum * num_boids) + i);
 
 		if (boid != thisBoid) {
-			auto distance = subtract(boid->Position, thisBoid->Position);
+			Vector distance = subtract(boid->Position, thisBoid->Position);
 
 
 			if (norm(distance) < 5 * BOID_RADIUS && isCloseby(thisBoid, boid)) {
@@ -108,7 +113,7 @@ Vector alignmentRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 	int totalSeen = 0;
 
 	for (int i = 0; i < num_boids; i++) {
-		auto boid = (boids + (flockNum * num_boids) + i);
+		Boid* boid = (boids + (flockNum * num_boids) + i);
 
 		if (boid != thisBoid && isCloseby(thisBoid, boid)) {
 			result = add(result, boid->Velocity);
@@ -129,14 +134,14 @@ Vector alignmentRule(Boid* boids, int flockNum, int num_boids, Boid* thisBoid)
 	return divide(subtract(result, thisBoid->Velocity), 8.0f);
 }
 
-Vector restrictPosition(Boid& boid)
+Vector restrictPosition(Boid* boid)
 {
 	Vector result;
 	result.X = 0;
 	result.Y = 0;
 
-	boid.Position.X = fmod(boid.Position.X, WINDOW_WIDTH);
-	boid.Position.Y = fmod(boid.Position.Y, WINDOW_HEIGHT);
+	boid->Position.X = fmod(boid->Position.X, WINDOW_WIDTH);
+	boid->Position.Y = fmod(boid->Position.Y, WINDOW_HEIGHT);
 
 	return result;
 }
@@ -158,12 +163,12 @@ void restrictVelocity(Boid* thisBoid)
 
 void updateVelocity(Boid* boids, int flockNum, int num_boids, Boid* boid)
 {
-	auto rule1 = cohesionRule(boids, flockNum, num_boids, boid);
-	auto rule2 = separationRule(boids, flockNum, num_boids, boid);
-	auto rule3 = alignmentRule(boids, flockNum, num_boids, boid);
-	auto rulePos = restrictPosition(*boid);
+	Vector rule1 = cohesionRule(boids, flockNum, num_boids, boid);
+	Vector rule2 = separationRule(boids, flockNum, num_boids, boid);
+	Vector rule3 = alignmentRule(boids, flockNum, num_boids, boid);
+	Vector rulePos = restrictPosition(boid);
 
-	auto newVelocity = add(add(add(rule1, rule2), rule3), rulePos);
+	Vector newVelocity = add(add(add(rule1, rule2), rule3), rulePos);
 
 	boid->Velocity = add(boid->Velocity, newVelocity);
 	restrictVelocity(boid);

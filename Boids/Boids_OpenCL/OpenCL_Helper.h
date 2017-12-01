@@ -3,8 +3,6 @@
 #include <vector>
 #include <string>
 
-typedef std::vector<cl_device_id> DeviceList;
-
 namespace clhelper {
 
 	cl_int clError;
@@ -138,7 +136,7 @@ namespace clhelper {
 		return program;
 	}
 
-	void buildProgram(cl_program program, std::vector<cl_device_id> devices)
+	bool buildProgram(cl_program program, std::vector<cl_device_id> devices)
 	{
 		clError = clBuildProgram(program, devices.size(), devices.data(), NULL, NULL, NULL);
 		try {
@@ -149,6 +147,7 @@ namespace clhelper {
 			std::cout << getProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG) << std::endl;
 			throw;
 		}
+		return true;
 	}
 
 	cl_kernel createKernel(cl_program program, std::string functionName)
@@ -189,10 +188,11 @@ namespace clhelper {
 		return buffer;
 	}
 
-	void setKernelArg(cl_kernel kernel, cl_uint paramIndex, size_t sizeofParam, const void* paramValue)
+	bool setKernelArg(cl_kernel kernel, cl_uint paramIndex, size_t sizeofParam, const void* paramValue)
 	{
 		clError = clSetKernelArg(kernel, paramIndex, sizeofParam, paramValue);
 		checkForCLError();
+		return true;
 	}
 
 	void enqueueWriteBuffer(cl_command_queue queue, cl_mem buffer, size_t offset, size_t memSize, const void* data)

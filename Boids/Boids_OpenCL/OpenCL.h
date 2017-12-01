@@ -3,42 +3,50 @@
 #include "Kernels.h"
 #include "DataTypes.h"
 
-
-
-DeviceList cpu_devices;
-
-DeviceList gpu_devices;
-cl_context gpu_context;
-cl_command_queue gpu_queue;
-cl_program gpu_program;
-cl_kernel kernel_updateBoids;
-
-
-void triggerGpuWork(Boid* boids, int numFlocks, int numBoids)
+void triggerGpuWork(Boid* boids, int numFlocks, int numBoidsPerFlock)
 {
-	auto memSize = sizeof(Boid) * numFlocks * numBoids;
-	static cl_mem gpu_memory = clhelper::createBuffer(gpu_context, CL_MEM_READ_WRITE, memSize);
+	static auto devices = clhelper::getDevicesOfType(CL_DEVICE_TYPE_GPU);
+	static auto context = clhelper::createContext(devices);
+	static auto queue = clhelper::createCommandQueue(context, devices[0]);
+	static auto program = clhelper::createProgramWithSource(context, sourceprogram_updateBoids());
+	static auto program_built = clhelper::buildProgram(program, devices);
+	static auto kernel_updateBoids = clhelper::createKernel(program, "updateBoid");
 
-	clhelper::enqueueWriteBuffer(gpu_queue, gpu_memory, 0, memSize, boids);
-	clhelper::setKernelArg(kernel_updateBoids, 0, sizeof(cl_mem), &gpu_memory);
-	clhelper::enqueueForDataParallelism(gpu_queue, kernel_updateBoids, numFlocks, numBoids);
-	clhelper::waitForQueueToFinish(gpu_queue);
+	auto memSize = sizeof(Boid) * numFlocks * numBoidsPerFlock;
+	static auto memory = clhelper::createBuffer(context, CL_MEM_READ_WRITE, memSize);
+	static auto kernelparam_set = clhelper::setKernelArg(kernel_updateBoids, 0, sizeof(cl_mem), &memory);
 
-	clhelper::enqueueReadBuffer(gpu_queue, gpu_memory, 0, memSize, boids);
+
+	clhelper::enqueueWriteBuffer(queue, memory, 0, memSize, boids);
+	clhelper::waitForQueueToFinish(queue);
+
+	clhelper::enqueueForDataParallelism(queue, kernel_updateBoids, numFlocks, numBoidsPerFlock);
+	clhelper::waitForQueueToFinish(queue);
+
+	clhelper::enqueueReadBuffer(queue, memory, 0, memSize, boids);
+	clhelper::waitForQueueToFinish(queue);
 }
 
-void initGpuAndWork()
+void triggerCpuWork(Boid* boids, int numFlocks, int numBoidsPerFlock)
 {
-	gpu_devices = clhelper::getDevicesOfType(CL_DEVICE_TYPE_GPU);
-	gpu_context = clhelper::createContext(gpu_devices);
-	gpu_queue = clhelper::createCommandQueue(gpu_context, gpu_devices[0]);
-	gpu_program = clhelper::createProgramWithSource(gpu_context, sourceprogram_updateBoids());
-	clhelper::buildProgram(gpu_program, gpu_devices);
+	static auto devices = clhelper::getDevicesOfType(CL_DEVICE_TYPE_CPU);
+	static auto context = clhelper::createContext(devices);
+	static auto queue = clhelper::createCommandQueue(context, devices[0]);
+	static auto program = clhelper::createProgramWithSource(context, sourceprogram_updateFlock());
+	static auto program_built = clhelper::buildProgram(program, devices);
+	static auto kernel_updateFlock = clhelper::createKernel(program, "updateFlock");
 
-	kernel_updateBoids = clhelper::createKernel(gpu_program, "updateBoid");
-}
+	auto memSize = sizeof(Boid) * numFlocks * numBoidsPerFlock;
+	static auto memory = clhelper::createBuffer(context, CL_MEM_READ_WRITE, memSize);
+	static auto kernelparam_set_mem = clhelper::setKernelArg(kernel_updateFlock, 0, sizeof(cl_mem), &memory);
+	static auto kernelparam_set_numBoids = clhelper::setKernelArg(kernel_updateFlock, 1, sizeof(int), &numBoidsPerFlock);
 
-void initOpenCL()
-{
-	initGpuAndWork();
+	clhelper::enqueueWriteBuffer(queue, memory, 0, memSize, boids);
+	clhelper::waitForQueueToFinish(queue);
+
+	clhelper::enqueueForDataParallelism(queue, kernel_updateFlock, numFlocks, 1);
+	clhelper::waitForQueueToFinish(queue);
+
+	clhelper::enqueueReadBuffer(queue, memory, 0, memSize, boids);
+	clhelper::waitForQueueToFinish(queue);
 }

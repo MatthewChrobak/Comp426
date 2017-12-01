@@ -32,6 +32,7 @@
     <ClInclude Include="DataTypes.h" />
     <ClInclude Include="Kernels.h" />
     <ClInclude Include="OpenCL.h" />
+    <ClInclude Include="OpenCLRules.h" />
     <ClInclude Include="OpenCL_Helper.h" />
     <ClInclude Include="RNG.h" />
     <ClInclude Include="Rules.h" />

@@ -59,5 +59,8 @@
     <ClInclude Include="OpenCL.h">
       <Filter>Kernels</Filter>
     </ClInclude>
+    <ClInclude Include="OpenCLRules.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
