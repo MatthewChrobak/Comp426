@@ -31,7 +31,7 @@ namespace clhelper {
 		return info;
 	}
 
-	std::vector<cl_platform_id> getPlatforms()
+	std::vector<cl_platform_id> getPlatforms(cl_int type = CL_DEVICE_TYPE_ALL)
 	{
 		cl_uint numPlatforms = 0;
 		clError = clGetPlatformIDs(0, nullptr, &numPlatforms);
@@ -45,8 +45,12 @@ namespace clhelper {
 		for (auto platform : platforms)
 		{
 			std::string name = getPlatformInfo(platform, CL_PLATFORM_NAME);
+			std::cout << name << std::endl;
 
-			if (name.find("OpenCL") != std::string::npos) {
+			if (type == CL_DEVICE_TYPE_CPU && name.find("OpenCL") != std::string::npos) {
+				opencl_platforms.push_back(platform);
+			}
+			if (type == CL_DEVICE_TYPE_GPU && name.find("CUDA") != std::string::npos) {
 				opencl_platforms.push_back(platform);
 			}
 		}
@@ -88,25 +92,36 @@ namespace clhelper {
 
 	std::vector<cl_device_id> getDevicesOfType(cl_int type)
 	{
-		auto platforms = getPlatforms();
+		auto platforms = getPlatforms(type);
 		std::vector<cl_device_id> devices;
 
 		for (auto platform : platforms)
 		{
 			cl_uint numDevices = 0;
-			clError = clGetDeviceIDs(platforms[0], type, 0, nullptr, &numDevices);
-			checkForCLError();
+			clError = clGetDeviceIDs(platform, type, 0, nullptr, &numDevices);
 
-			std::vector<cl_device_id> platformDevices(numDevices);
-			clError = clGetDeviceIDs(platforms[0], type, numDevices, platformDevices.data(), nullptr);
-			checkForCLError();
+			try {
+				checkForCLError();
+			}
+			catch (cl_int e) {
+				if (e != CL_DEVICE_NOT_FOUND) {
+					throw e;
+				}
+			}
+			
 
-			for (auto device : platformDevices)
-			{
-				std::string name = getDeviceInfo(device, CL_DEVICE_NAME);
-				std::cout << "Found device " << name << " at " << device << std::endl;
+			if (numDevices) {
+				std::vector<cl_device_id> platformDevices(numDevices);
+				clError = clGetDeviceIDs(platform, type, numDevices, platformDevices.data(), nullptr);
+				checkForCLError();
 
-				devices.push_back(device);
+				for (auto device : platformDevices)
+				{
+					std::string name = getDeviceInfo(device, CL_DEVICE_NAME);
+					std::cout << "Found device " << name << " at " << device << std::endl;
+
+					devices.push_back(device);
+				}
 			}
 		}
 

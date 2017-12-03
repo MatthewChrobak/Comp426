@@ -12,8 +12,6 @@ __kernel void updateBoid(__global Boid* boids)
 
 	boid->Position.X += boid->Velocity.X;
 	boid->Position.Y += boid->Velocity.Y;
-
-	//printf("Updating boid %d \n", boidId);
 }
 )";
 }
@@ -22,12 +20,7 @@ std::string getRules()
 {
 	return R"(
 #include "DataTypes.h"
-
-#define WINDOW_WIDTH 1800
-#define WINDOW_HEIGHT 900
-#define BOOST_SPEED 10
-#define BOID_RADIUS 2.0f
-#define DISTANCE (20 * BOID_RADIUS)
+#include "Constants.h"
 
 Vector add(Vector v1, Vector v2)
 {

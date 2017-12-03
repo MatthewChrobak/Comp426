@@ -1,8 +1,6 @@
 #pragma once
 #include "DataTypes.h"
-
-#define WINDOW_WIDTH 1800
-#define WINDOW_HEIGHT 900
+#include "Constants.h"
 
 class Space
 {

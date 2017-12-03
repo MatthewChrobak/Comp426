@@ -6,21 +6,12 @@
 #include "Color.h"
 #include <iostream>
 #include "Space.h"
-#include "Rules.h"
 #include "OpenCL.h"
 
 Boid* Boids;
 Color* Colors;
 int NUM_FLOCKS = 0;
 int NUM_BOIDS = 0;
-
-void updateBoid(Boid* boids, int boidId)
-{
-	auto boid = boids + boidId;
-
-	boid->Position.X += boid->Velocity.X;
-	boid->Position.Y += boid->Velocity.Y;
-}
 
 void draw()
 {
@@ -50,8 +41,8 @@ void draw()
 
 void generateFlocks()
 {
-	NUM_FLOCKS = 150; RNG::getNextInt(3, 7);
-	NUM_BOIDS = 50; RNG::getNextInt(10, 20);
+	NUM_FLOCKS = 50;
+	NUM_BOIDS = 100;
 
 	Boids = (Boid*)malloc(sizeof(Boid) * NUM_FLOCKS * NUM_BOIDS);
 	Colors = (Color*)malloc(sizeof(Color) * NUM_FLOCKS);
@@ -60,8 +51,8 @@ void generateFlocks()
 		Boid boid;
 		boid.Position.X = (float)RNG::getNextInt(0, WINDOW_WIDTH);
 		boid.Position.Y = (float)RNG::getNextInt(0, WINDOW_HEIGHT);
-		boid.Velocity.X = RNG::getNextInt(-1, 1);
-		boid.Velocity.Y = RNG::getNextInt(-1, 1);
+		boid.Velocity.X = RNG::getNextInt(0, 100) > 50 ? -1 : 1;
+		boid.Velocity.Y = RNG::getNextInt(0, 100) > 50 ? -1 : 1;
 
 		*(Boids + i) = boid;
 	}
@@ -81,17 +72,8 @@ void initOpenGL()
 	glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutInitWindowPosition(0, 0);
-	glutCreateWindow("Assignment 1: Boids");
+	glutCreateWindow("Project");
 	glutDisplayFunc(draw);
-}
-
-
-void updateBoids(Boid* boids, int flockNum)
-{
-	for (int boidIndex = flockNum * NUM_BOIDS; boidIndex < (flockNum + 1) * NUM_BOIDS; boidIndex++) {
-		auto boid = (boids + boidIndex);
-		updateVelocity(boids, flockNum, NUM_BOIDS, boid);
-	}
 }
 
 int main(int* numargs, char** args)
@@ -114,7 +96,7 @@ int main(int* numargs, char** args)
 		}
 
 		if (tick > tmrFrameRate) {
-			std::string newTitle = "Assignment 1: Boids " + std::to_string(fps);
+			std::string newTitle = "Project: Boids " + std::to_string(fps);
 			glutSetWindowTitle(newTitle.c_str());
 			tmrFrameRate = tick + 1000;
 			fps = 0;
